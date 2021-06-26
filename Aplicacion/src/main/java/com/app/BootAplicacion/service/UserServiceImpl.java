@@ -2,81 +2,102 @@ package com.app.BootAplicacion.service;
 
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.app.BootAplicacion.dto.ChangePasswordForm;
 import com.app.BootAplicacion.entity.User;
 import com.app.BootAplicacion.repository.UserRepository;
 
 @Service
-public class UserServiceImpl implements UserService{
-	
+public class UserServiceImpl implements UserService {
+
 	@Autowired
-	UserRepository userRepository;
-	
-	public Iterable<User> getAllUsers(){
-		return userRepository.findAll();
-	}
-	
+	UserRepository repository;
+
 	@Override
-	public User createUser(User formUser) throws Exception {
-		if( !checkUsernameExists(formUser)
-				&& checkPasswordMatch(formUser)){
-			
-			formUser.setPassword(formUser.getPassword());
-			
-			User createdUser = userRepository.save(formUser);
-			return createdUser;
-		}
-		return formUser;
+	public Iterable<User> getAllUsers() {
+		return repository.findAll();
 	}
-	
-	private boolean checkUsernameExists(User user) throws Exception{
-		Optional<User> existentUser = userRepository.findByUsername(user.getUsername());
-		if(existentUser.isPresent()) {
-			throw new Exception("Username already exists");
-		}
-		return false;
-	}
-	
-	private boolean checkPasswordMatch(User user)throws Exception{
-		if( user.getPassword()!=null
-				&& !user.getPassword().equals(user.getConfirmPassword()) ){
-			
-			throw new Exception("Passwords does not match");
+
+	private boolean checkUsernameAvailable(User user) throws Exception {
+		Optional<User> userFound = repository.findByUsername(user.getUsername());
+		if (userFound.isPresent()) {
+			throw new Exception("Username no disponible");
 		}
 		return true;
 	}
-	
+
+	private boolean checkPasswordValid(User user) throws Exception {
+		if (user.getConfirmPassword() == null || user.getConfirmPassword().isEmpty()) {
+			throw new Exception("Confirm Password es obligatorio");
+		}
+
+		if (!user.getPassword().equals(user.getConfirmPassword())) {
+			throw new Exception("Password y Confirm Password no son iguales");
+		}
+		return true;
+	}
+
 	@Override
-	public User getUserById(Long id) throws Exception {
-		User user = userRepository.findById(id).orElseThrow(() -> new Exception("User does not exist"));
+	public User createUser(User user) throws Exception {
+		if (checkUsernameAvailable(user) && checkPasswordValid(user)) {
+			user = repository.save(user);
+		}
 		return user;
 	}
-	
-	public User updateUser(User formUser) throws Exception {
-		
-		User storedUser = userRepository.findById(formUser.getId())
-				.orElseThrow(() -> new Exception("UsernotFound in updateUser -"+this.getClass().getName()));
-		
-		mapUser(formUser,storedUser);
-		userRepository.save(storedUser);
-		return storedUser;
+
+	@Override
+	public User getUserById(Long id) throws Exception {
+		return repository.findById(id).orElseThrow(() -> new Exception("El usuario no existe."));
 	}
-	
-	protected void mapUser(User from,User to) {
+
+	@Override
+	public User updateUser(User fromUser) throws Exception {
+		User toUser = getUserById(fromUser.getId());
+		mapUser(fromUser, toUser);
+		return repository.save(toUser);
+	}
+
+	/**
+	 * Map everythin but the password.
+	 * 
+	 * @param from
+	 * @param to
+	 */
+	protected void mapUser(User from, User to) {
 		to.setUsername(from.getUsername());
 		to.setFirstName(from.getFirstName());
 		to.setLastName(from.getLastName());
 		to.setEmail(from.getEmail());
 		to.setRoles(from.getRoles());
-		to.setPassword(from.getPassword());
 	}
 
+	@Override
 	public void deleteUser(Long id) throws Exception {
-		User user = userRepository.findById(id)
-				.orElseThrow(() -> new Exception("UsernotFound in deleteUser -"+this.getClass().getName()));
+		User user = getUserById(id);
+		repository.delete(user);
+	}
 
-		userRepository.delete(user);
+	@Override
+	public User changePassword(ChangePasswordForm form) throws Exception {
+		User user = getUserById(form.getId());
+
+		if (!user.getPassword().equals(form.getCurrentPassword())) {
+			throw new Exception("Current Password invalido.");
+		}
+
+		if (user.getPassword().equals(form.getNewPassword())) {
+			throw new Exception("Nuevo debe ser diferente al password actual.");
+		}
+
+		if (!form.getNewPassword().equals(form.getConfirmPassword())) {
+			throw new Exception("Nuevo Password y Current Password no coinciden.");
+		}
+
+		user.setPassword(form.getNewPassword());
+		return repository.save(user);
 	}
 }
