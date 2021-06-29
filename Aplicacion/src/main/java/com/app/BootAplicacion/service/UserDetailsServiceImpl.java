@@ -18,11 +18,11 @@ import com.app.BootAplicacion.repository.UserRepository;
 
 @Service
 @Transactional
-public class UserDetailsServiceImpl implements UserDetailsService{
-	
+public class UserDetailsServiceImpl implements UserDetailsService {
+
 	@Autowired
     UserRepository userRepository;
-
+	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		
@@ -34,7 +34,7 @@ public class UserDetailsServiceImpl implements UserDetailsService{
             grantList.add(grantedAuthority);
 		}
 		UserDetails user = (UserDetails) new User(username,appUser.getPassword(),grantList);
-
+		
 		return user;
 	}
 

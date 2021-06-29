@@ -17,8 +17,8 @@ public class Role implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 5541924059889048675L;
-	
-	
+
+
 	@Id
 	@GeneratedValue(strategy= GenerationType.AUTO, generator="native")
 	@GenericGenerator(name="native",strategy="native")
@@ -54,8 +54,6 @@ public class Role implements Serializable{
 		this.description = description;
 	}
 	
-	
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -99,5 +97,4 @@ public class Role implements Serializable{
 	}
 	
 	
-
 }

@@ -28,8 +28,8 @@ public class User implements Serializable{
 	private static final long serialVersionUID = -3258126312927793826L;
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO, generator = "native")
-	@GenericGenerator(name = "native", strategy = "native")
+	@GeneratedValue(strategy=GenerationType.AUTO, generator="native")
+	@GenericGenerator(name="native",strategy="native")
 	private Long id;
 	
 	@Column
@@ -55,11 +55,11 @@ public class User implements Serializable{
 	@Size(min=1)
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "user_roles",
-			joinColumns = @JoinColumn(name="user_id"),
-			inverseJoinColumns = @JoinColumn(name="role_id"))
+			joinColumns=@JoinColumn(name="user_id"),
+			inverseJoinColumns=@JoinColumn(name="role_id"))
 	private Set<Role> roles;
-	
-	public User() {	
+
+	public User() {
 		super();
 	}
 
@@ -123,11 +123,11 @@ public class User implements Serializable{
 	public void setConfirmPassword(String confirmPassword) {
 		this.confirmPassword = confirmPassword;
 	}
-	
-	public Set<Role> getRoles(){
+
+	public Set<Role> getRoles() {
 		return roles;
 	}
-	
+
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
 	}
@@ -205,5 +205,5 @@ public class User implements Serializable{
 			return false;
 		return true;
 	}
-		
+
 }
